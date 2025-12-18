@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打字练习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* 左侧题目列表样式 */
+        .topic-list {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .topic-list h2 {
+            margin-bottom: 15px;
+            color: #3498db;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .topic-item {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #3498db;
+        }
+        
+        .topic-item:hover {
+            background-color: #e8f4fc;
+            transform: translateX(5px);
+        }
+        
+        .topic-item.active {
+            background-color: #d6eaf8;
+            border-left-color: #2980b9;
+            font-weight: bold;
+        }
+        
+        .topic-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .topic-length {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        /* 右侧打字区域样式 */
+        .typing-area {
+            flex: 2;
+            min-width: 500px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .timer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+            background-color: #f9f2f4;
+            padding: 10px 20px;
+            border-radius: 8px;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 16px;
+        }
+        
+        .stat-item {
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .text-display {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 300px;
+            overflow-y: auto;
+            line-height: 1.8;
+            font-size: 18px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .correct {
+            color: #27ae60;
+            background-color: #eafaf1;
+        }
+        
+        .incorrect {
+            color: #e74c3c;
+            background-color: #fdedec;
+            text-decoration: underline;
+        }
+        
+        .current {
+            background-color: #fffacd;
+            padding: 2px 0;
+            border-radius: 3px;
+        }
+        
+        .text-input {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            transition: border 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .start-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .pause-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .pause-btn:hover {
+            background-color: #d68910;
+        }
+        
+        .restart-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .restart-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .score-btn {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .score-btn:hover {
+            background-color: #8e44ad;
+        }
+        
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .result-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        .result-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .result-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .result-stat {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .result-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .accuracy-high {
+            color: #27ae60;
+        }
+        
+        .accuracy-medium {
+            color: #f39c12;
+        }
+        
+        .accuracy-low {
+            color: #e74c3c;
+        }
+        
+        .close-btn {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 10px 25px;
+        }
+        
+        .close-btn:hover {
+            background-color: #636e72;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .typing-area, .topic-list {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .timer-section {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>打字练习系统</h1>
+            <p class="subtitle">选择题目开始练习，每篇文章限时10分钟，自动评分</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- 左侧题目列表 -->
+            <div class="topic-list">
+                <h2>练习题目 (共52题)</h2>
+                <div id="topic-container">
+                    <!-- 题目将通过JS动态加载 -->
+                </div>
+            </div>
+            
+            <!-- 右侧打字区域 -->
+            <div class="typing-area">
+                <div class="timer-section">
+                    <div class="timer">
+                        <span id="minutes">10</span>:<span id="seconds">00</span>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">总字数</div>
+                            <div class="stat-value" id="total-chars">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">已打字数</div>
+                            <div class="stat-value" id="typed-chars">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">准确率</div>
+                            <div class="stat-value" id="accuracy">0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-display" id="text-display">
+                    <!-- 题目文本将通过JS动态显示 -->
+                </div>
+                
+                <textarea class="text-input" id="text-input" placeholder="请在此处输入上面的文本内容..." disabled></textarea>
+                
+                <div class="controls">
+                    <button class="start-btn" id="start-btn">开始练习</button>
+                    <button class="pause-btn" id="pause-btn" disabled>暂停</button>
+                    <button class="restart-btn" id="restart-btn" disabled>重新开始</button>
+                    <button class="score-btn" id="score-btn">立即评分</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 评分结果弹窗 -->
+    <div class="result-modal" id="result-modal">
+        <div class="result-content">
+            <h2 class="result-title">打字练习结果</h2>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div>总字数</div>
+                    <div class="result-value" id="result-total">0</div>
+                </div>
+                <div class="result-stat">
+                    <div>已打字数</div>
+                    <div class="result-value" id="result-typed">0</div>
+                </div>
+                <div class="result-stat">
+                    <div>正确字数</div>
+                    <div class="result-value" id="result-correct">0</div>
+                </div>
+                <div class="result-stat">
+                    <div>准确率</div>
+                    <div class="result-value" id="result-accuracy">0%</div>
+                </div>
+            </div>
+            <p id="result-message">请继续努力！</p>
+            <button class="close-btn" id="close-modal">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 题目数据
+        const topics =[
+{id: 1, title: "《计算机系统》", length: 117, content: "《计算机系统》一书介绍到计算机核心部件是中央处理器--简称ＣＰＵ，软件系统分为系统软件和应用软件，系统软件有DOS、UNIX、Windows等，其中Windows系统市场占有率约为60~80%，应用软件有Office、WPS、QQ等。"},
+{id: 2, title: "图书分类法", length: 109, content: "以《三国演义》为例，根据《中国图书馆分类法》，该书应该归属于“社会科学”--“文学”--“中国文学”--“小说”--“古代作品”--“章回小说”类。为了方便图书管理&读者借阅，图书馆会按照预定规则对每本图书进行编码……"},
+{id: 3, title: "开学第一节课", length: 109, content: "秋季开学第一节课，Mr.Gao发给我们每个人２０页《左传》--一部最具有文学性同时也是最难懂的中国经典作品。对古汉语当时我唯一知道的是：中国文字是单音节的，文章中的每一个字只标出一个音节，读的顺序是从上到下，从右到左。"},
+{id: 4, title: "我们的感情", length: 119, content: "一些令人伤心或愤慨的故事，也曾使我们悲哀落泪，但不久就被抛到九霄云外，一些丑恶的现象，也曾让我们义愤填膺，但很快又让那些令人激动的事情麻木不觉。这一切只不过是因为：它们发生在别人身上，离“我的世界”实在太远，我们的感情于是在空气中冷却……"},
+{id: 5, title: "天气预报", length: 105, content: "未来48小时，全国部分地区气温将超过40℃。当前，随着南方各地纷纷官宣梅雨期结束，大范围持续性高温天气已经卷土重来，黄淮、江淮以及江南、华南等地的气温将一路飙升。简单来说，全国大部分地区都将进入“烧烤状态”……"},
+{id: 6, title: "《悲惨世界》", length: 108, content: "《悲惨世界》是维克多·雨果的代表作，揭露了资本主义社会的尖锐矛盾和贫富悬殊，描写了下层人民的痛苦命运，提出了当时社会的三个迫切问题：“贫穷使男子潦倒，饥饿使妇女堕落，黑暗使儿童羸弱”……猛烈抨击了资产阶级法律的虚伪。"},
+{id: 7, title: "U盘", length: 122, content: "优盘--U盘，全称“USB闪存盘”，英文是“USB flash disk”。它是一个USB接口的移动存储设备，容量可达６４GB或者更高，可以通过USB接口与电脑连接，实现【即插即用】，用于备份数据。特点是：小巧、便于携带、存储容量大、价格便宜。"},
+{id: 8, title: "暮春的早晨", length: 104, content: "仿佛一个暮春的早晨，霏霏的毛雨默然洒在我的脸上，引起润泽，轻松的感觉。新鲜的微风吹动我的衣袂，像爱人的鼻息吹着我的手一样。我立的一条白矾石的甬道上，经了那细雨，正如涂了一层薄薄的乳油，踏着只觉越发滑腻可爱了。"},
+{id: 9, title: "生命", length: 118, content: "生命就是一次次蜕变的过程。唯有经历各种各样的折磨，才能增加生命的厚度。一个人的成长过程，恰似蝴蝶破茧的过程，在痛苦的挣扎中，意志得到锻炼，力量得到加强，心智得到提高，生命在痛苦中得到升华。当你从痛苦中走出来时，就会发现，你已经……"},
+{id: 10, title: "钟南山", length: 103, content: "钟南山出生于医学世家，1960年毕业于北京医学院，2007年获英国爱丁堡大学（University of Edinburgh,UK）荣誉博士，２０２０年８月１１日习近平签署主席令，授予钟南山“共和国勋章”."},
+{id: 11, title: "航空站", length: 113, content: "航空站是人类在太空进行各项科学研究活动的重要场所！１９７１年，前苏联发射了第一座航空站“礼炮1号”，由“联盟号”飞船运送宇航工作人员和物资。１９７３年，美国发射了航空站“天空实验室”，由“阿波罗”号飞船运送宇航工作人员和物资。"},
+{id: 12, title: "《每日经济新闻》", length: 111, content: "《每日经济新闻》创刊于2004年12月9日，设置一报、两网两端（每经网/英文网、每经中文简体APP/繁体APP），男性读者占比67.5%，年纪26-45岁的读者占比82%，承担着探索“媒体+智库”新型可持续发展之路的职责。"},
+{id: 13, title: "ＨＩＶ", length: 115, content: "据调查，目前我国ＨＩＶ感染方式主要是滥用毒品（静脉注射）来传播流行。云南艾滋病检测中心负责人指出：“目前，在国外的吸毒者中，艾滋病静脉注射吸毒者的感染率为23%，而边境一带的毒品流行重灾区，吸毒群体艾滋病感染率竟高达68%……”."},
+{id: 14, title: "强健体魄", length: 102, content: "２０２０年开学军训，绿军装的学子们晕倒、病倒的事不在少数，学校常规体能测试中，长跑成了不少人的“噩梦”……好日子咋就养不出壮孩子？朋友们，我们不仅需要用强健体魄支撑美好生活，还需要终生健康，开创美好未来！"},
+{id: 15, title: "吉多·范罗苏姆", length: 114, content: "Python的创始人为荷兰人吉多·范罗苏姆（１９５６--）（Guido van Rossum），他为了打发圣诞节的无趣，决心开发一个新的脚本解释程序。Python取自英国20世纪70年代首播的电视喜剧《蒙提·派森的飞行马戏团》。"},
+{id: 16, title: "孟子", length: 96, content: "孟子（前372--前289）中国古代著名思想家、教育家，孟子继承并发扬了孔子的思想，成为仅次于孔子的一代儒家宗师，有“亚圣”之称，与孔子合称为“孔孟”，其《孟子》一书是中国古代的“四书”之一。"},
+{id: 17, title: "计算机研究硬件", length: 100, content: "计算机的硬件是看的见、摸的着的物理实体部分，计算机硬件系统由：１．运算器，２．控制器，３．存储器，４．输入设备，５．输出设备等五大部件组成。中央处理器（ＣＰＵ）主要包括运算器和控制器，是计算机的核心。"},
+{id: 18, title: "３Ｄ打印", length: 114, content: "３Ｄ打印已经成为一种潮流，并开始广泛应用在设计领域，尤其是工业设计、数码产品开模等，可以在数小时内完成一个磨具的打印，节约了产品到市场的开发时间。MakerBot公司推出的Thing-Matic３Ｄ打印机，零售价格低至$300。"},
+{id: 19, title: "新冠疫苗", length: 113, content: "从在北京举行的２０２０年中国国际服务贸易交易会公共卫生防疫专题展区获悉，国药集团中国生物的两个新冠灭活疫苗已进入最后的Ⅲ期临床研究阶段，Ⅲ期临床试验入组接种５万人、样本人群覆盖１１５个国家，该两款疫苗的年产能目前已增至３亿剂。"},
+{id: 20, title: "云课堂", length: 111, content: "云课堂（Cloudclassroom），一个能把课堂搬到家的神器。为了便于学习，课程内容按学段、年级、学期分类，可以实现“点读机”的方便性！和传统的课程相比，云课堂上课时间地点不受限、上课方式更加多样、课程类型也更加丰富。"},
+{id: 21, title: "Python", length: 118, content: "Python是一种计算机程序设计语言，由吉多·范罗苏姆创造，第一版发布于１９９１年，可以视之为一种改良的ＬＩＳＰ。Python的设计哲学强调程序的可读性和简洁的语法。相比于C＋＋或Java，Python让开发者能够用更少的程序表达想法。"},
+{id: 22, title: "冠状病毒", length: 119, content: "冠状病毒是一个大型病毒家族，病毒直径约80～120nm，呈球形或椭圆形，具有多形性，可引起感冒、中东呼吸综合征（ＭＥＲＳ）和严重急性呼吸综合征（ＳＡＲＳ）等较严重疾病。最先是1937年从鸡身上分离出来，1965年分离出第一株人的冠状病毒。"},
+{id: 23, title: "ＷＰＳOffice", length: 104, content: "ＷＰＳOffice是由金山软件股份有限公司自主研发的一款办公软件套装，可以实现办公软件最常用的文字、表格、演示及ＰＤＦ阅读……。具有内存占用低、运行速度快、云功能多、免费提供海量在线存储空间及文档模板的优点。"},
+{id: 24, title: "2019新型冠状病毒", length: 120, content: "2020年1月12日，世界卫生组织正式将造成武汉肺炎疫情的新型冠状病毒命名为“2019新型冠状病毒”（2019-nCoV），未提及“武汉”。冠状病毒可引起的严重疾病主要有：感冒、中东呼吸综合征（ＭＥＲＳ）、严重急性呼吸综合征（ＳＡＲＳ）等。"},
+{id: 25, title: "诗文的滋味", length: 100, content: "我品尝到了诗文的滋味就是“齐鲁青未了”与“黄河入海流”的壮美，就是偶遇桃花源与偷吃罗汉豆的惊喜，就是先忧后乐和与民同乐的崇高。诗文里的绿水青山将焕发出更加妩媚多姿的容颜，中华民族的梦想也定会大放异彩！"},
+{id: 26, title: "茶卡盐湖", length: 109, content: "茶卡盐湖，面积１０５平方公里，储盐量达4亿4千多万吨，已有3000多年的开采史。游客在此即可观赏盐湖风光，又可参观机械化采盐作业，通向湖心区的小火车是深受游客欢迎的乘载工具。茶卡距西宁300公里，可乘坐长途汽车前往……"},
+{id: 27, title: "生命的天空", length: 112, content: "生命（ＬＩＦＥ）的天空里，有风和日丽，亦有云遮雾障。不是每轮艳阳都暖人，不是每片乌云都下雨。既然决定不了命运的走向，那就踏实走过每一天，既然左右不了天空的变幻，那就悉心装扮自己的心空。请相信：珍惜了，能拥有，付出了，有回报。"},
+{id: 28, title: "面对自己", length: 109, content: "有人说：心有多大，舞台就有多大，没有做不到，只有想不到。只要我们想到了就要对自己说，我可以，我一定行。勇于面对自己的不足，超越自己的格局，承担失败，吸取纰漏，重头再来。如果你一败涂地，从此一蹶不振，那你只能望洋兴叹……"},
+{id: 29, title: "生命需要奋斗", length: 113, content: "生命需要奋斗（struggle），奋斗与不奋斗，造就的结果截然不同。生无所息，保持奋斗的姿态，让世界变得如此灿烂，让你的人生绚烂多姿。千万不能满足小溪的平缓，否则你也就满足了自己的平庸，只有欣赏到山峰的险峻，才有机会欣赏自己。"},
+{id: 30, title: "生活", length: 106, content: "生活是个五彩缤纷的世界，蕴涵着追求的艰辛，成功的喜悦，挫折的苦痛，孤独的寂寞……但无论怎样，都不要让微笑在生活中枯竭。微笑着面对生活，微笑着面对人生，微笑着面对一切。把微笑给予别人，给予这个世界，也给予我们自己。"},
+{id: 31, title: "春节", length: 111, content: "春节--这座本该喧嚣的城市被一场突如其来的疫情按下了“静音”键，这是一个寂寞的春节，没有聚会，没有旅行甚至没有团圆，可是人间再冷，安静的城市也永远有勇敢者们在逆风而行，致敬一线的白衣战士，致敬始终坚守在工作岗位的每一个人！"},
+{id: 32, title: "计算机", length: 101, content: "计算机（Computer）俗称电脑、微机，是现代一种用于高速计算的电子计算机器，可以进行数值计算，又可以进行逻辑计算，还具有存储记忆功能。是能够按照程序运行，自动、高速处理海量数据的现代化智能电子设备。"},
+{id: 33, title: "学艺术", length: 106, content: "毛泽东于《在延安文艺座谈会上的讲话》中讲道：“人民生活中本来存在着文学艺术原料的矿藏，这是自然形态的东西，是粗糙的东西，但也是最生动、最丰富、最基本的东西……它们是一切文学艺术的取之不尽、用之不竭的唯一的源泉。”"},
+{id: 34, title: "Python介绍", length: 116, content: "Python由荷兰数学和计算机科学研究学会的Guido van Rossum于１９９０年代初设计，作为一门叫做ＡＢＣ语言的替代品。Python解释器易于扩展，可以使用C或C++（或者其他可以通过C调用的语言）扩展新的功能和数据类型。"},
+{id: 35, title: "网络动图", length: 97, content: "即便是天天讲英语的美国人，面对一些新的科技名词是，发音依然千奇百怪，比如网络动图“gif”一派美国人读成“给夫特（gift，意思是礼物）”，另一派则读成“姐夫”，两派的比例分别占50%和40%."},
+{id: 36, title: "《大道之行也》", length: 98, content: "大道之行也，天下为公，选贤与能，讲信修睦。故人不独亲其亲，不独子其子，使老有所终，壮有所用，幼有所长，矜、寡、孤、独、废疾者皆有所养，男友分，女有归。货恶其弃于地也，不必藏于己，力恶其不出于身也。"},
+{id: 37, title: "COVID－19", length: 146, content: "2019年2月11日，WHO将由新型冠状病毒引发的疾病命名为２０１９冠状病毒病，英文名称为＂Corona Virus Disease 2019＂，简称“COVID－19”。新型冠状病毒疫苗可用于预防新冠病毒感染所致的疾病。截至2021年3月，我国已有3种新冠病毒疫苗批准附条件上市或紧急使用。"},
+{id: 38, title: "计算机编码", length: 143, content: "由计算机产生和处理的电子信号，用“１”或“０”编码储存，可以变成图像、文字、声音、数据等信息。这种数字处理方式的变革，称为数学革命（The Digital Revolution）。在数字时代，人们的学习、生活、工作大量地利用互联网，可以在任何地点与任何时间用任何设备获得他所需要的信息。"},
+{id: 39, title: "ＣＰＩ", length: 117, content: "2021年9月份，食品烟酒类价格同比下降2.8%，影响ＣＰＩ（居民消费价格指数）下降约0.79个百分点。食品中，畜肉类价格下降28.5%，影响ＣＰＩ下降约1.26个百分点，其中猪肉价格下降46.9%，影响ＣＰＩ下降约1.12个百分点。"},
+{id: 40, title: "价值", length: 100, content: "你才会真正体会到那埋于心底的微笑的真正含义与价值。那是一种称不上崇高但却让你足以自豪的滋味。微笑，寄予着美好的情感，我实在找不出恰当的词语形容它，或许，这句诗会表达它的含义吧：“与人玫瑰，留有余香！”"},
+{id: 41, title: "希望", length: 100, content: "天上的风筝渐渐的多了，地上的孩子也多了。城里乡下，家家户户、老老少少、也赶趟似的，一个个都出来了。舒活舒活筋骨，抖擞抖擞精神，各做各的一份儿事去，“一年之计在于春”，刚起头，有的是工夫，有的是希望……"},
+{id: 42, title: "区块链", length: 135, content: "汤森路透利用Wipo数据库整理的数据显示，在２０１７年提交的４０６项与区块链有关的专利申请中，超过50%来自中国。美国（去年为91项，2016年为21项）和澳大利亚（去年为13项，2016年为19项）。2018年3月31日，《区块链技术原理与开发实战》正式引入高校讲堂。"},
+{id: 43, title: "英文标点符号", length: 114, content: "遇到英文标点符号应该怎样正确输入呢？首先应当确认中文输入法为关闭状态。标点符号键多为双字符键如果直接按下双字符键，屏幕上显示的是下面那个字符。例如，要输入“～”号，该怎么办呢？答案是：先按住Ｓｈｉｆｔ键不松手，然后按一下｀键。"},
+{id: 44, title: "机缘", length: 120, content: "人面桃花里，浅笑如酒，竟醉了三生石上的誓约。经年之上，弹一曲高山流水，吟一阕莫失莫忘。一切都是机缘，亦或是定数。所以，我们生命中所遇到的每个人，都应当要珍惜！人生长途漫漫，我们不可能每一步都走得那么完美，摔上几跤，走几段弯路，这并非坏事……"},
+{id: 45, title: "《中华人民共和国网络安全法》", length: 142, content: "《中华人民共和国网络安全法》是为保障网络安全，维护网络空间主权和国家安全、社会公共利益，保护公民、法人和其他组织的合法权益，促进经济社会信息化健康发展而制定的法律。由中华人民共和国第十二届全国人民代表大会常务委员会第二十四次会议于2016年11月7日通过，自2017年6月1日起施行。"},
+{id: 46, title: "ＣＰＵ", length: 131, content: "ＣＰＵ是一台电脑的核心。ＣＰＵ的品牌主要有两种：ＡＭＤ和Intel。 ＡＭＤ有速龙、推土机等型号，Intel有13、15、17、Pentium4等型号。单就两个品牌来说，ＡＭＤ耗电较高，发热量大，相同频率的两个品牌中，Intel性能相对较好，但ＡＭＤ更经济实惠。"},
+{id: 47, title: "牡丹", length: 120, content: "牡丹（学名：Paeonia suffruticosa Andr）：是双子叶植物纲、芍药科、芍药属植物。为多年生落叶灌木，茎高达2米，分枝短而粗。叶通常为二回三出复叶，表面绿色，无毛，背面淡绿色，有时具白粉，叶柄长5-11厘米，和叶轴均无毛。"},
+{id: 48, title: "李白", length: 113, content: "如果没有李白，我们的生活会失去不少鼓励：犯难了，说不了长风破浪会有时。如果没有李白，我们的神州大地也会模糊起来：我们不再知道黄河之水哪里来，庐山瀑布有多高，蜀道究竟有多难。如果没有李白，黄山、天台山、峨眉山的风景也会失色几许。"},
+{id: 49, title: "好的学习", length: 108, content: "好的学习效果、好的学习成绩从培养良好的行为习惯开始，Ｎｏｂｅｌ奖获得者米斯特拉尔说：“许多需要的东西我们可以等等，但是学生不能等，他的骨骼正在形成，血液正在生成，心智正在发育，对学生们不能说明天--他的名字是今天！”"},
+{id: 50, title: "孟晚舟", length: 123, content: "经过１０００多天的煎熬，我终于回到了祖国的怀抱。异国他乡的漫长等待充满了挣扎和煎熬，但当我走下舷梯，双脚落地的那一刻，家乡的温度让我心潮澎湃，难以言表。祖国，我回来了！感谢伟大的祖国和人民，感谢党和政府的关怀，感谢所有关注和关心我的人。--孟晚舟"},
+{id: 51, title: "芍药", length: 145, content: "芍药（学名：Paeonia lactiflora Pall）：别名别离草、花中丞相，毛茛科芍药属多年生草本。块根由根颈下方生出，肉质，粗壮，呈纺锤形或长柱形，粗0.6～3.5cm。芍药花瓣呈倒卵形，花盘为浅杯状，花期5～6月，花一般着生于茎的顶端或近顶端叶腋处，原种花白色，花瓣5～13枚"}
+        ];
+     
+        // DOM元素
+        const topicContainer = document.getElementById('topic-container');
+        const textDisplay = document.getElementById('text-display');
+        const textInput = document.getElementById('text-input');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreBtn = document.getElementById('score-btn');
+        const minutesDisplay = document.getElementById('minutes');
+        const secondsDisplay = document.getElementById('seconds');
+        const totalCharsDisplay = document.getElementById('total-chars');
+        const typedCharsDisplay = document.getElementById('typed-chars');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const resultModal = document.getElementById('result-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        
+        // 状态变量
+        let currentTopic = null;
+        let timer = null;
+        let timeLeft = 600; // 10分钟 = 600秒
+        let isRunning = false;
+        let isPaused = false;
+        let typedChars = 0;
+        let correctChars = 0;
+        
+        // 初始化题目列表
+        function initTopics() {
+            topics.forEach(topic => {
+                const topicItem = document.createElement('div');
+                topicItem.className = 'topic-item';
+                topicItem.innerHTML = `
+                    <div class="topic-title">${topic.title}</div>
+                    <div class="topic-length">${topic.length}字</div>
+                `;
+                
+                topicItem.addEventListener('click', () => {
+                    // 移除所有题目的active类
+                    document.querySelectorAll('.topic-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // 为当前题目添加active类
+                    topicItem.classList.add('active');
+                    
+                    // 加载题目内容
+                    loadTopic(topic);
+                });
+                
+                topicContainer.appendChild(topicItem);
+            });
+            
+            // 默认选择第一个题目
+            if (topics.length > 0) {
+                document.querySelector('.topic-item').click();
+            }
+        }
+        
+        // 加载题目内容
+        function loadTopic(topic) {
+            currentTopic = topic;
+            
+            // 重置状态
+            resetExercise();
+            
+            // 显示题目内容
+            textDisplay.innerHTML = '';
+            const chars = topic.content.split('');
+            chars.forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                textDisplay.appendChild(span);
+            });
+            
+            // 更新总字数
+            totalCharsDisplay.textContent = topic.length;
+            
+            // 清空输入框
+            textInput.value = '';
+            typedChars = 0;
+            correctChars = 0;
+            updateStats();
+        }
+        
+        // 重置练习
+        function resetExercise() {
+            clearInterval(timer);
+            isRunning = false;
+            isPaused = false;
+            timeLeft = 600;
+            updateTimerDisplay();
+            
+            // 更新按钮状态
+            startBtn.disabled = false;
+            startBtn.textContent = '开始练习';
+            pauseBtn.disabled = true;
+            restartBtn.disabled = true;
+            textInput.disabled = true;
+            
+            // 清除所有高亮
+            const spans = textDisplay.querySelectorAll('span');
+            spans.forEach(span => {
+                span.className = '';
+            });
+            
+            // 重置统计
+            typedChars = 0;
+            correctChars = 0;
+            updateStats();
+        }
+        
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            minutesDisplay.textContent = minutes.toString().padStart(2, '0');
+            secondsDisplay.textContent = seconds.toString().padStart(2, '0');
+        }
+        
+        // 开始计时器
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            isPaused = false;
+            
+            // 更新按钮状态
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            restartBtn.disabled = false;
+            textInput.disabled = false;
+            textInput.focus();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    isRunning = false;
+                    textInput.disabled = true;
+                    showResult();
+                }
+            }, 1000);
+        }
+        
+        // 暂停/继续计时器
+        function togglePause() {
+            if (!isRunning) return;
+            
+            if (isPaused) {
+                // 继续计时
+                isPaused = false;
+                pauseBtn.textContent = '暂停';
+                textInput.disabled = false;
+                textInput.focus();
+                
+                timer = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        isRunning = false;
+                        textInput.disabled = true;
+                        showResult();
+                    }
+                }, 1000);
+            } else {
+                // 暂停计时
+                isPaused = true;
+                pauseBtn.textContent = '继续';
+                clearInterval(timer);
+                textInput.disabled = true;
+            }
+        }
+        
+        // 重新开始练习
+        function restartExercise() {
+            if (confirm('确定要重新开始吗？当前的输入进度将会丢失。')) {
+                loadTopic(currentTopic);
+                startTimer();
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            typedCharsDisplay.textContent = typedChars;
+            
+            const accuracy = typedChars > 0 ? Math.round((correctChars / typedChars) * 100) : 0;
+            accuracyDisplay.textContent = `${accuracy}%`;
+            
+            // 根据准确率设置颜色
+            if (accuracy >= 90) {
+                accuracyDisplay.style.color = '#27ae60';
+            } else if (accuracy >= 70) {
+                accuracyDisplay.style.color = '#f39c12';
+            } else {
+                accuracyDisplay.style.color = '#e74c3c';
+            }
+        }
+        
+        // 处理输入
+        function handleInput() {
+            if (!isRunning || isPaused) return;
+            
+            const inputText = textInput.value;
+            typedChars = inputText.length;
+            
+            // 更新文本显示的高亮
+            const spans = textDisplay.querySelectorAll('span');
+            let correctCount = 0;
+            
+            spans.forEach((span, index) => {
+                // 移除之前的高亮
+                span.classList.remove('correct', 'incorrect', 'current');
+                
+                if (index < inputText.length) {
+                    // 已输入的部分
+                    if (span.textContent === inputText[index]) {
+                        span.classList.add('correct');
+                        correctCount++;
+                    } else {
+                        span.classList.add('incorrect');
+                    }
+                } else if (index === inputText.length) {
+                    // 当前输入位置
+                    span.classList.add('current');
+                }
+            });
+            
+            correctChars = correctCount;
+            updateStats();
+        }
+        
+        // 显示结果
+        function showResult() {
+            const accuracy = typedChars > 0 ? Math.round((correctChars / typedChars) * 100) : 0;
+            
+            // 更新结果弹窗内容
+            document.getElementById('result-total').textContent = currentTopic.length;
+            document.getElementById('result-typed').textContent = typedChars;
+            document.getElementById('result-correct').textContent = correctChars;
+            document.getElementById('result-accuracy').textContent = `${accuracy}%`;
+            
+            // 设置准确率颜色
+            const resultAccuracyElem = document.getElementById('result-accuracy');
+            resultAccuracyElem.className = 'result-value ';
+            if (accuracy >= 90) {
+                resultAccuracyElem.classList.add('accuracy-high');
+            } else if (accuracy >= 70) {
+                resultAccuracyElem.classList.add('accuracy-medium');
+            } else {
+                resultAccuracyElem.classList.add('accuracy-low');
+            }
+            
+            // 设置评价消息
+            const resultMessage = document.getElementById('result-message');
+            if (accuracy >= 95) {
+                resultMessage.textContent = '太棒了！您的打字准确率非常高！';
+            } else if (accuracy >= 80) {
+                resultMessage.textContent = '很不错！您的打字准确率良好，继续努力！';
+            } else if (accuracy >= 60) {
+                resultMessage.textContent = '还可以，但还有提升空间，多加练习会更好！';
+            } else {
+                resultMessage.textContent = '需要更多练习，注意减少错误，提高准确率！';
+            }
+            
+            // 显示结果弹窗
+            resultModal.style.display = 'flex';
+        }
+        
+        // 立即评分
+        function scoreNow() {
+            if (!isRunning && typedChars === 0) {
+                alert('请先开始练习并输入一些内容！');
+                return;
+            }
+            
+            clearInterval(timer);
+            isRunning = false;
+            textInput.disabled = true;
+            showResult();
+        }
+        
+        // 事件监听
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', togglePause);
+        restartBtn.addEventListener('click', restartExercise);
+        scoreBtn.addEventListener('click', scoreNow);
+        textInput.addEventListener('input', handleInput);
+        closeModalBtn.addEventListener('click', () => {
+            resultModal.style.display = 'none';
+        });
+        
+        // 初始化
+        initTopics();
+        
+        // 点击弹窗外部关闭弹窗
+        window.addEventListener('click', (event) => {
+            if (event.target === resultModal) {
+                resultModal.style.display = 'none';
+            }
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (event) => {
+            // 如果正在输入，不触发快捷键
+            if (event.target === textInput) return;
+            
+            // Ctrl+Enter 开始/暂停
+            if (event.ctrlKey && event.key === 'Enter') {
+                if (!isRunning) {
+                    startTimer();
+                } else {
+                    togglePause();
+                }
+                event.preventDefault();
+            }
+            
+            // Ctrl+R 重新开始
+            if (event.ctrlKey && event.key === 'r') {
+                restartExercise();
+                event.preventDefault();
+            }
+            
+            // Ctrl+S 立即评分
+            if (event.ctrlKey && event.key === 's') {
+                scoreNow();
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
